@@ -31,13 +31,13 @@
       hosts: ["www.instagram.com", "instagram.com"],
       cssBasePath: "platforms/instagram/css",
       supportedStyles: [
+        "mediaGallery",
         "mediaPreview",
         "messages",
         "messagesPreview",
         "name",
         "noDelay",
         "profilePic",
-        "textInput",
         "unblurActive"
       ],
       isActiveRoute: (urlObj) => {

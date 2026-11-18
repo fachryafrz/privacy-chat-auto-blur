@@ -2,18 +2,19 @@
 /* Released under the MIT license, see LICENSE file for details      */
 
 body:hover div[role="article"][aria-roledescription="message"],
+body:hover div[role="group"]:has(div[role="article"][aria-roledescription="message"]) div[role="button"] div[role="presentation"],
+body:hover div:has(> div > div[aria-label="Cancel reply"]) > div:first-child,
 body:hover div[role="button"] div[data-visualcompletion="ignore"],
 body:hover div[role="article"][aria-roledescription="message"] img,
 body:hover div[role="article"][aria-roledescription="message"] video,
+body:hover div[tabindex="-1"]:has(svg[aria-label="Close"]) div[role="dialog"][aria-modal="true"] img,
+body:hover div[tabindex="-1"]:has(svg[aria-label="Close"]) div[role="dialog"][aria-modal="true"] video,
 body:hover div[role="button"] img[width="56"],
 body:hover div[role="button"] span[style*="56px"] img,
 body:hover div[role="main"] header img,
 body:hover div[role="button"] span[title],
 body:hover div[role="main"] header a[role="link"] span,
-body:hover div[role="main"] header h2 span {
+body:hover div[role="main"] header h2 span,
+body:hover div[role="group"]:has(div[role="article"][aria-roledescription="message"]) > div > div:first-child:not(:has(div[role="article"])):not(:has(div[role="button"])) span[dir="auto"] {
   filter: blur(0) grayscale(0) !important;
-}
-
-body:hover div[role="textbox"][contenteditable="true"] {
-  filter: grayscale(0) opacity(1) !important;
 }
