@@ -26,7 +26,7 @@ const version = manifest.version;
 
 // Prefix (ignore CLI flags starting with --)
 const argPrefix = process.argv.slice(2).find(arg => !arg.startsWith("--"));
-const prefix = argPrefix || "blurwa";
+const prefix = argPrefix || "blurchat";
 
 const chromeZipName = `v${version}-chrome-${prefix}.zip`;
 const firefoxZipName = `v${version}-firefox-${prefix}.zip`;

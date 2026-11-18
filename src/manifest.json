@@ -3,7 +3,7 @@
   "default_locale": "en",
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "3.5.2",
+  "version": "3.6.0",
   "action": {
     "default_title": "__MSG_extensionName__",
     "default_popup": "popup/popup.html",
@@ -20,14 +20,23 @@
     "128": "images/icon128.png"
   },
   "permissions": ["storage", "alarms"],
-  "host_permissions": ["https://web.whatsapp.com/*"],
+  "host_permissions": [
+    "https://web.whatsapp.com/*",
+    "https://www.instagram.com/*"
+  ],
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
-      "matches": ["https://web.whatsapp.com/*"],
-      "js": ["scripts/contentScript.js"]
+      "matches": [
+        "https://web.whatsapp.com/*",
+        "https://www.instagram.com/*"
+      ],
+      "js": [
+        "core/platforms.js",
+        "scripts/contentScript.js"
+      ]
     }
   ],
   "web_accessible_resources": [
@@ -35,17 +44,28 @@
       "resources": [
         "images/statusOn.png",
         "images/statusOff.png",
-        "css/messages.css",
-        "css/messagesPreview.css",
-        "css/mediaPreview.css",
-        "css/mediaGallery.css",
-        "css/textInput.css",
-        "css/profilePic.css",
-        "css/name.css",
-        "css/noDelay.css",
-        "css/unblurActive.css"
+        "platforms/whatsapp/css/messages.css",
+        "platforms/whatsapp/css/messagesPreview.css",
+        "platforms/whatsapp/css/mediaPreview.css",
+        "platforms/whatsapp/css/mediaGallery.css",
+        "platforms/whatsapp/css/textInput.css",
+        "platforms/whatsapp/css/profilePic.css",
+        "platforms/whatsapp/css/name.css",
+        "platforms/whatsapp/css/noDelay.css",
+        "platforms/whatsapp/css/unblurActive.css",
+        "platforms/instagram/css/messages.css",
+        "platforms/instagram/css/messagesPreview.css",
+        "platforms/instagram/css/mediaPreview.css",
+        "platforms/instagram/css/textInput.css",
+        "platforms/instagram/css/profilePic.css",
+        "platforms/instagram/css/name.css",
+        "platforms/instagram/css/noDelay.css",
+        "platforms/instagram/css/unblurActive.css"
       ],
-      "matches": ["https://web.whatsapp.com/*"]
+      "matches": [
+        "https://web.whatsapp.com/*",
+        "https://www.instagram.com/*"
+      ]
     }
   ],
   "commands": {

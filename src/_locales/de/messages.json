@@ -1,9 +1,9 @@
 {
     "extensionName": {
-        "message": "Privacy for WhatsApp Web (Auto Blur WA)"
+        "message": "Privacy Chat Auto Blur"
     },
     "extensionDescription": {
-        "message": "Automatisch unscharfe Nachrichten, Medien, Namen und mehr auf WhatsApp Web, bis Sie mit der Maus darüber fahren. Aktiv gepflegter Community-Fork."
+        "message": "Automatisch unscharfe Nachrichten, Medien, Namen und mehr auf WhatsApp Web und Instagram DM, bis Sie mit der Maus darüber fahren."
     },
     "extensionShortcut": {
         "message": "Ein-/Ausschalten"

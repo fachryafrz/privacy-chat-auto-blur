@@ -578,13 +578,46 @@
         .toast-close-btn:active {
           opacity: 0.5;
         }
+        .platform-toggles {
+          display: flex;
+          gap: 8px;
+          padding-right: 14px;
+          margin-bottom: 10px;
+        }
+        .platform-pill {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 6px;
+          padding: 5px 8px;
+          border: 1px solid var(--border-line-color);
+          border-radius: 6px;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: border-color 0.2s, background-color 0.2s;
+        }
+        .platform-pill:has(input:checked) {
+          border-color: var(--primary-color);
+          background-color: color-mix(in srgb, var(--primary-color), transparent 90%);
+        }
+        .platform-pill input[type="checkbox"] {
+          accent-color: var(--primary-color);
+          cursor: pointer;
+          position: static;
+          opacity: 1;
+          width: 14px;
+          height: 14px;
+          margin: 0;
+        }
       </style>
     </head>
     <body>
       <header>
         <div class="header-group">
           <img src="../images/icon32.png" alt="">
-          <h1>Privacy for WhatsApp Web (Auto Blur WA)</h1>
+          <h1>Privacy Chat Auto Blur</h1>
         </div>
         <button class="theme-toggle" data-localetitle="toggleTheme">
           <!-- tabler:sun -->
@@ -617,6 +650,16 @@
             </label>
           </div>
           <br>
+          <div class="platform-toggles" aria-label="Platforms">
+            <div class="platform-pill" data-platform-pill="whatsapp">
+              <span>WhatsApp</span>
+              <input type="checkbox" data-platform-toggle="whatsapp" aria-label="WhatsApp">
+            </div>
+            <div class="platform-pill" data-platform-pill="instagram">
+              <span>Instagram DM</span>
+              <input type="checkbox" data-platform-toggle="instagram" aria-label="Instagram DM">
+            </div>
+          </div>
         </div>
         <h2 style="margin: 5px 0; padding-right: 14px;">
           <locales data-locale="extensionSettings"></locales>
@@ -712,7 +755,7 @@
                 </button>
               </div>
             </li>
-            <li>
+            <li data-style-row="mediaGallery">
               <locales data-locale="toggleMediaGallery"></locales>
               <button type="button" class="trigger-btn" data-localetitle="openAdvancedSettings">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -942,6 +985,7 @@
       
       <div id="toast-container"></div>
 
+      <script src="../core/platforms.js"></script>
       <script src="popup.js"></script>
       <script src="theme-toggle.js"></script>
     </body>

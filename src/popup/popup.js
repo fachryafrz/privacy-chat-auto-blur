@@ -1,55 +1,88 @@
-/* Privacy for WhatsApp Web (Auto Blur WA)                           */
+/* Multi-Platform Privacy Auto-Blur                                  */
 /* Original Copyright (c) 2024 Lukas Lenhardt - lukaslen.com         */
 /* Fork & Maintenance Copyright (c) 2026 M Aryo Muzakki - muzakki.id */
 /* Released under the MIT license, see LICENSE file for details      */
 
-// Remove this upon Chrome supporting the browser namespace
 if (typeof browser == "undefined") {
-  // Redefine browser namespace for Chrome for interoperability with Firefox
   globalThis.browser = chrome;
 }
 
-const styleIdentifier = "pfwa";
 const settingsIdentifier = "settings";
+const platformRegistry = globalThis.PRIVACY_BLUR_PLATFORMS;
 
-let version = browser.runtime.getManifest().version;
-document.getElementById('version').innerText = version;
+const version = browser.runtime.getManifest().version;
+document.getElementById("version").innerText = version;
 
-document.querySelectorAll('[data-locale]').forEach(e => {
+document.querySelectorAll("[data-locale]").forEach((e) => {
   e.innerText = browser.i18n.getMessage(e.dataset.locale);
 });
-document.querySelectorAll('[data-localetitle]').forEach(e => {
+document.querySelectorAll("[data-localetitle]").forEach((e) => {
   e.title = browser.i18n.getMessage(e.dataset.localetitle);
 });
 
-// Track switch changes and save settings
+const styleSwitches = document.querySelectorAll("input[type='checkbox'][data-style]");
+const platformSwitches = document.querySelectorAll("input[type='checkbox'][data-platform-toggle]");
+const forms = document.querySelectorAll("form.var-style");
+const scheduleForm = document.querySelector("form.schedule-form");
+
+function getNormalizedSettings(raw) {
+  return platformRegistry.migrateAndMergeSettings(raw);
+}
+
+// Track global switch changes and save settings
 function saveSettings() {
-  let id = this.dataset.style;
-  let checked = this.checked;
+  const id = this.dataset.style;
+  const checked = this.checked;
 
   browser.storage.sync.get([settingsIdentifier]).then((result) => {
-    if (!result.hasOwnProperty(settingsIdentifier)) {
-      browser.runtime.reload();
-      return;
-    }
-    if (id == "on") {
-      result.settings.on = checked;
+    const normalized = getNormalizedSettings(result?.settings);
+
+    if (id === "on") {
+      normalized.on = checked;
     } else if (id === "blurOnIdle") {
-      result.settings.blurOnIdle.isEnabled = checked;
+      normalized.blurOnIdle.isEnabled = checked;
     } else if (id === "schedule") {
-      result.settings.schedule.isEnabled = checked;
+      normalized.schedule.isEnabled = checked;
     } else {
-      result.settings.styles[id] = checked;
+      normalized.styles[id] = checked;
     }
-    browser.storage.sync.set(result);
+
+    browser.storage.sync.set({ settings: normalized });
   });
 }
-const switches = document.querySelectorAll("input[type='checkbox']");
-switches.forEach((checkbox) => {
-  checkbox.addEventListener('change', saveSettings);
+
+styleSwitches.forEach((checkbox) => {
+  checkbox.addEventListener("change", saveSettings);
 });
 
-// toggle open/close blur amount settings
+// Track per-platform enable/disable toggles
+function savePlatformToggle() {
+  const platformId = this.dataset.platformToggle;
+  const checked = this.checked;
+
+  browser.storage.sync.get([settingsIdentifier]).then((result) => {
+    const normalized = getNormalizedSettings(result?.settings);
+    normalized.enabledPlatforms[platformId] = checked;
+    browser.storage.sync.set({ settings: normalized });
+  });
+}
+
+platformSwitches.forEach((checkbox) => {
+  checkbox.addEventListener("change", savePlatformToggle);
+});
+
+document.querySelectorAll(".platform-pill").forEach((pill) => {
+  pill.addEventListener("click", (ev) => {
+    if (ev.target.tagName === "INPUT") return;
+    const cb = pill.querySelector("input[type='checkbox']");
+    if (cb) {
+      cb.checked = !cb.checked;
+      cb.dispatchEvent(new Event("change"));
+    }
+  });
+});
+
+// Toggle open/close blur amount settings
 const onClickOutside = (targetElement, callback, once = true) => {
   function handler(ev) {
     if (!ev.composedPath().includes(targetElement)) {
@@ -65,7 +98,7 @@ const onClickOutside = (targetElement, callback, once = true) => {
   }, 0);
 
   return () => document.removeEventListener("click", handler);
-}
+};
 
 let removeOutsideListener = null;
 
@@ -77,105 +110,98 @@ const togglePopup = (ev) => {
     trigger.classList.remove("active");
     popoverElement.setAttribute("aria-hidden", "true");
     popoverElement.style.maxHeight = null;
-  }
+  };
 
   if (!trigger.classList.contains("active")) {
     trigger.classList.add("active");
     popoverElement.removeAttribute("aria-hidden");
     popoverElement.style.maxHeight = popoverElement.scrollHeight + "px";
-    removeOutsideListener = onClickOutside(ev.currentTarget.parentNode.querySelector(".popover"), (ev) => {
+    removeOutsideListener = onClickOutside(popoverElement, () => {
       closeSetting();
     });
   } else {
     closeSetting();
-    removeOutsideListener();
+    removeOutsideListener?.();
   }
-}
+};
 
 const cancelAdvancedSetting = (ev) => {
   const popoverElement = ev.currentTarget.parentNode;
 
   browser.storage.sync.get([settingsIdentifier]).then((result) => {
-    if (!result.hasOwnProperty(settingsIdentifier)) {
-      browser.runtime.reload();
-      return;
-    }
-    popoverElement.querySelectorAll("input[type='number']").forEach(input => {
+    const settings = getNormalizedSettings(result?.settings);
+
+    popoverElement.querySelectorAll("input[type='number']").forEach((input) => {
       const varName = input.dataset.varName;
       input.value = parseInt(
         varName === "itBlur"
-          ? result.settings?.blurOnIdle?.idleTimeout ?? 15
-          : result.settings.varStyles[varName]
+          ? settings.blurOnIdle?.idleTimeout ?? 15
+          : settings.varStyles[varName],
+        10
       );
     });
-    popoverElement.querySelectorAll("input[type='time']").forEach(input => {
+
+    popoverElement.querySelectorAll("input[type='time']").forEach((input) => {
       const name = input.name;
       if (name === "startTime" || name === "endTime") {
-        input.value = result.settings?.schedule?.[name] ?? (name === "startTime" ? "09:00" : "17:00");
+        input.value = settings.schedule?.[name] ?? (name === "startTime" ? "09:00" : "17:00");
       }
     });
-    const savedDays = Array.isArray(result.settings?.schedule?.days)
-      ? result.settings.schedule.days
+
+    const savedDays = Array.isArray(settings.schedule?.days)
+      ? settings.schedule.days
       : [0, 1, 2, 3, 4, 5, 6];
-    popoverElement.querySelectorAll(".day-btn").forEach(btn => {
+    popoverElement.querySelectorAll(".day-btn").forEach((btn) => {
       const dayNum = parseInt(btn.dataset.day, 10);
-      if (savedDays.includes(dayNum)) {
-        btn.classList.add("active");
-      } else {
-        btn.classList.remove("active");
-      }
+      btn.classList.toggle("active", savedDays.includes(dayNum));
     });
 
     popoverElement.parentNode.querySelector(".trigger-btn.active")?.classList.remove("active");
     popoverElement.setAttribute("aria-hidden", "true");
     popoverElement.style.maxHeight = null;
     removeOutsideListener?.();
-  })
-}
+  });
+};
 
-const triggerButtons = document.querySelectorAll(".trigger-btn");
-triggerButtons.forEach((triggerBtn) => {
+document.querySelectorAll(".trigger-btn").forEach((triggerBtn) => {
   triggerBtn.addEventListener("click", togglePopup);
 });
-const cancelButtons = document.querySelectorAll(".cancel-btn");
-cancelButtons.forEach((cancelBtn) => {
+document.querySelectorAll(".cancel-btn").forEach((cancelBtn) => {
   cancelBtn.addEventListener("click", cancelAdvancedSetting);
 });
 
-// Day buttons toggle click
-const dayButtons = document.querySelectorAll(".day-btn");
-dayButtons.forEach((btn) => {
+document.querySelectorAll(".day-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     btn.classList.toggle("active");
   });
 });
 
-// toast utility
+// Toast utility
 const showToast = (message, duration = 3000, persistent = false) => {
-  const container = document.getElementById('toast-container');
-  const toast = document.createElement('div');
-  toast.className = 'toast';
+  const container = document.getElementById("toast-container");
+  const toast = document.createElement("div");
+  toast.className = "toast";
 
-  const p = document.createElement('p');
-  p.className = 'msg';
+  const p = document.createElement("p");
+  p.className = "msg";
   p.textContent = message;
   toast.appendChild(p);
 
   if (persistent) {
-    const btn = document.createElement('button');
-    btn.className = 'toast-close-btn';
-    btn.textContent = '×';
+    const btn = document.createElement("button");
+    btn.className = "toast-close-btn";
+    btn.textContent = "×";
     toast.appendChild(btn);
   }
 
   container.appendChild(toast);
 
-  const removeToast = (toast) => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
-  }
+  const removeToast = (toastEl) => {
+    toastEl.classList.remove("show");
+    setTimeout(() => toastEl.remove(), 300);
+  };
 
-  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => toast.classList.add("show"), 10);
 
   if (!persistent) {
     setTimeout(() => {
@@ -184,36 +210,33 @@ const showToast = (message, duration = 3000, persistent = false) => {
   } else {
     toast.querySelector(".toast-close-btn").addEventListener("click", () => {
       removeToast(toast);
-    })
+    });
   }
-}
+};
 
-// track form save/submit for advanced settings (variable style settings)
+// Track form save/submit for advanced settings (variable style settings)
 function saveFormSettings(ev) {
   ev.preventDefault();
   const [key, val] = Object.entries(Object.fromEntries(new FormData(ev.target)))[0];
 
   browser.storage.sync.get([settingsIdentifier]).then((result) => {
-    if (!result.hasOwnProperty(settingsIdentifier)) {
-      browser.runtime.reload();
-      return;
-    }
-    if (key === "itBlur") {
-      result.settings.blurOnIdle.idleTimeout = val;
-    } else {
-      result.settings.varStyles[key] = val + "px";
-    }
-    browser.storage.sync.set(result);
+    const normalized = getNormalizedSettings(result?.settings);
 
-    showToast(browser.i18n.getMessage('toastSaved'));
+    if (key === "itBlur") {
+      normalized.blurOnIdle.idleTimeout = val;
+    } else {
+      normalized.varStyles[key] = val + "px";
+    }
+
+    browser.storage.sync.set({ settings: normalized });
+    showToast(browser.i18n.getMessage("toastSaved"));
   });
 }
-const forms = document.querySelectorAll("form.var-style");
+
 forms.forEach((form) => {
   form.addEventListener("submit", saveFormSettings);
-})
+});
 
-const scheduleForm = document.querySelector("form.schedule-form");
 if (scheduleForm) {
   scheduleForm.addEventListener("submit", (ev) => {
     ev.preventDefault();
@@ -221,56 +244,60 @@ if (scheduleForm) {
     const startTime = formData.get("startTime");
     const endTime = formData.get("endTime");
     const activeDayButtons = scheduleForm.querySelectorAll(".day-btn.active");
-    const days = Array.from(activeDayButtons).map(btn => parseInt(btn.dataset.day, 10));
+    const days = Array.from(activeDayButtons).map((btn) => parseInt(btn.dataset.day, 10));
 
     browser.storage.sync.get([settingsIdentifier]).then((result) => {
-      if (!result.hasOwnProperty(settingsIdentifier)) {
-        browser.runtime.reload();
-        return;
-      }
-      result.settings.schedule.startTime = startTime;
-      result.settings.schedule.endTime = endTime;
-      result.settings.schedule.days = days;
-      browser.storage.sync.set(result).then(() => {
+      const normalized = getNormalizedSettings(result?.settings);
+
+      normalized.schedule.startTime = startTime;
+      normalized.schedule.endTime = endTime;
+      normalized.schedule.days = days;
+
+      browser.storage.sync.set({ settings: normalized }).then(() => {
         try {
           browser.runtime.sendMessage({ action: "checkSchedule" });
         } catch (e) {}
       });
 
-      showToast(browser.i18n.getMessage('toastSaved'));
+      showToast(browser.i18n.getMessage("toastSaved"));
     });
   });
 }
 
-function applySettingsToUI(settings) {
-  if (!settings || typeof settings !== "object") return;
+function applySettingsToUI(rawSettings) {
+  const settings = getNormalizedSettings(rawSettings);
+  if (!settings) return;
 
-  switches.forEach((checkbox) => {
-    let id = checkbox.dataset.style;
+  platformSwitches.forEach((checkbox) => {
+    const platformId = checkbox.dataset.platformToggle;
+    checkbox.checked = settings.enabledPlatforms?.[platformId] !== false;
+  });
+
+  styleSwitches.forEach((checkbox) => {
+    const id = checkbox.dataset.style;
     if (id === "on") {
       checkbox.checked = settings.on ?? false;
     } else if (id === "blurOnIdle") {
-      checkbox.checked = settings?.blurOnIdle?.isEnabled ?? false;
+      checkbox.checked = settings.blurOnIdle?.isEnabled ?? false;
     } else if (id === "schedule") {
-      checkbox.checked = settings?.schedule?.isEnabled ?? false;
+      checkbox.checked = settings.schedule?.isEnabled ?? false;
     } else {
       checkbox.checked = settings.styles?.[id] ?? false;
     }
   });
 
-  // set variable input value
   forms.forEach((form) => {
     const numInput = form.querySelector(`input[type="number"]`);
     if (!numInput) return;
     const varName = numInput.dataset.varName;
     if (varName === "itBlur") {
-      numInput.value = parseInt(settings?.blurOnIdle?.idleTimeout ?? 15);
+      numInput.value = parseInt(settings.blurOnIdle?.idleTimeout ?? 15, 10);
     } else if (settings.varStyles?.[varName]) {
-      numInput.value = parseInt(settings.varStyles[varName]);
+      numInput.value = parseInt(settings.varStyles[varName], 10);
     }
   });
 
-  if (settings?.schedule) {
+  if (settings.schedule) {
     const startInput = document.getElementById("scheduleStartTime");
     const endInput = document.getElementById("scheduleEndTime");
     if (startInput) startInput.value = settings.schedule.startTime ?? "09:00";
@@ -279,13 +306,9 @@ function applySettingsToUI(settings) {
     const days = Array.isArray(settings.schedule.days)
       ? settings.schedule.days
       : [0, 1, 2, 3, 4, 5, 6];
-    document.querySelectorAll(".day-btn").forEach(btn => {
+    document.querySelectorAll(".day-btn").forEach((btn) => {
       const dayNum = parseInt(btn.dataset.day, 10);
-      if (days.includes(dayNum)) {
-        btn.classList.add("active");
-      } else {
-        btn.classList.remove("active");
-      }
+      btn.classList.toggle("active", days.includes(dayNum));
     });
   }
 }
@@ -297,16 +320,10 @@ browser.storage.onChanged.addListener((changes, area) => {
   }
 });
 
-// Load settings and update switches on popup open
+// Load settings on popup open
 browser.storage.sync.get([settingsIdentifier]).then((result) => {
-  if (!result.hasOwnProperty(settingsIdentifier)) {
-    browser.runtime.reload();
-    return;
-  }
+  applySettingsToUI(result?.settings);
 
-  applySettingsToUI(result.settings);
-
-  // Ask background to verify schedule state on popup open
   try {
     browser.runtime.sendMessage({ action: "checkSchedule" });
   } catch (e) {}

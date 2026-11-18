@@ -1,0 +1,15 @@
+/* Multi-Platform Privacy Auto-Blur - Instagram DM                   */
+/* Released under the MIT license, see LICENSE file for details      */
+
+div[role="article"][aria-roledescription="message"] img,
+div[role="article"][aria-roledescription="message"] video {
+  filter: blur(var(--mdp-blur)) grayscale(1);
+  transition-delay: 0s;
+}
+
+div[role="article"][aria-roledescription="message"]:hover img,
+div[role="article"][aria-roledescription="message"]:hover video {
+  filter: blur(0) grayscale(0);
+  transition-delay: 0.1s;
+  transition-duration: 0.15s;
+}

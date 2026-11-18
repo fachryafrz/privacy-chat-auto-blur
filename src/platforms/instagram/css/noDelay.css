@@ -1,0 +1,16 @@
+/* Multi-Platform Privacy Auto-Blur - Instagram DM                   */
+/* Released under the MIT license, see LICENSE file for details      */
+
+div[role="article"][aria-roledescription="message"]:hover,
+div[role="button"]:hover div[data-visualcompletion="ignore"],
+div[role="article"][aria-roledescription="message"]:hover img,
+div[role="article"][aria-roledescription="message"]:hover video,
+div[role="button"]:hover img[width="56"],
+div[role="button"]:hover span[style*="56px"] img,
+div[role="main"] header img:hover,
+div[role="button"]:hover span[title],
+div[role="main"] header a[role="link"]:hover span,
+div[role="main"] header h2:hover span,
+div[role="textbox"][contenteditable="true"]:hover {
+  transition-delay: 0s !important;
+}

@@ -1,9 +1,9 @@
 {
     "extensionName": {
-        "message": "Privacidade para o WhatsApp Web (Desfoque Automático)"
+        "message": "Privacy Chat Auto Blur"
     },
     "extensionDescription": {
-        "message": "Desfoca automaticamente mensagens, mídias, nomes e muito mais no WhatsApp Web até você passar o mouse. Fork da comunidade mantido ativamente."
+        "message": "Desfoca automaticamente mensagens, mídias, nomes e muito mais no WhatsApp Web e Instagram DM até você passar o mouse."
     },
     "extensionShortcut": {
         "message": "Ligado/Desligado"
