@@ -3,7 +3,7 @@
   "default_locale": "en",
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "action": {
     "default_title": "__MSG_extensionName__",
     "default_popup": "popup/popup.html",
@@ -55,8 +55,8 @@
         "platforms/whatsapp/css/unblurActive.css",
         "platforms/instagram/css/messages.css",
         "platforms/instagram/css/messagesPreview.css",
+        "platforms/instagram/css/mediaGallery.css",
         "platforms/instagram/css/mediaPreview.css",
-        "platforms/instagram/css/textInput.css",
         "platforms/instagram/css/profilePic.css",
         "platforms/instagram/css/name.css",
         "platforms/instagram/css/noDelay.css",

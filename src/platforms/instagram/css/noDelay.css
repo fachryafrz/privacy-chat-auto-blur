@@ -2,15 +2,19 @@
 /* Released under the MIT license, see LICENSE file for details      */
 
 div[role="article"][aria-roledescription="message"]:hover,
+div[role="group"]:has(div[role="article"][aria-roledescription="message"]) div[role="button"]:hover div[role="presentation"],
+div:has(> div > div[aria-label="Cancel reply"]) > div:first-child:hover,
 div[role="button"]:hover div[data-visualcompletion="ignore"],
 div[role="article"][aria-roledescription="message"]:hover img,
 div[role="article"][aria-roledescription="message"]:hover video,
+div[tabindex="-1"]:has(svg[aria-label="Close"]) div[role="dialog"][aria-modal="true"] img:hover,
+div[tabindex="-1"]:has(svg[aria-label="Close"]) div[role="dialog"][aria-modal="true"] video:hover,
 div[role="button"]:hover img[width="56"],
 div[role="button"]:hover span[style*="56px"] img,
 div[role="main"] header img:hover,
 div[role="button"]:hover span[title],
 div[role="main"] header a[role="link"]:hover span,
 div[role="main"] header h2:hover span,
-div[role="textbox"][contenteditable="true"]:hover {
+div[role="group"]:has(div[role="article"][aria-roledescription="message"]) > div > div:first-child:not(:has(div[role="article"])):not(:has(div[role="button"])) span[dir="auto"]:hover {
   transition-delay: 0s !important;
 }
